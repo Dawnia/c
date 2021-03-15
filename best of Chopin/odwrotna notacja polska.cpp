@@ -171,7 +171,23 @@ int main(){
 						break;
 					
 					case '/':
-						new_val = pre_val_1 / pre_val_2 ;
+						if(pre_val_2)
+							new_val = pre_val_1 / pre_val_2 ;
+						else{
+							cout <<
+							endl <<
+							"//////////" <<
+							endl <<
+							"You can not devide by zero" <<
+							endl <<
+							"//////////" <<
+							endl <<
+							endl;
+							stack_push(symbs, pre_val_2);
+							stack_push(symbs, pre_val_1);
+							
+							trig_correct_input = false;
+						}
 						break;
 				}
 			}
