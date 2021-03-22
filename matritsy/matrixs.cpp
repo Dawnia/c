@@ -3,10 +3,14 @@
 
 using namespace std;
 
-
-int** matrix_create(unsigned int n){
 // каждая матрица -- указатель на массив указателей,
 // каждый указатель из массива указывает на столбец
+
+// a size of a matrix starting from which naive multiplication starts
+// presented as a power of 2
+const char EFFIENCY_THRESHOLD = 6;
+
+int** matrix_create(unsigned int n){
 	int** new_matrix = new int*[n];
 	for(unsigned int i = 0; i < n; ++i){
 		int* new_column = new int[n];
@@ -37,7 +41,7 @@ int** matrix_sum(int** matrix_1, int** matrix_2, unsigned int n){
 	return new_matrix;
 }
 
-
+// multiplication by a number
 int** matrix_nummul(int** some_matrix, int number, unsigned int n){
 	int** new_matrix = matrix_create(n);
 	
@@ -49,7 +53,7 @@ int** matrix_nummul(int** some_matrix, int number, unsigned int n){
 	return new_matrix;
 }
 
-
+// naive multiplication for any matrics
 int** matrix_naivemul(int** matrix_1, int** matrix_2, unsigned int n){
 	int** new_matrix = matrix_create(n);
 	
@@ -67,16 +71,16 @@ int** matrix_naivemul(int** matrix_1, int** matrix_2, unsigned int n){
 	return new_matrix;
 }
 
-
-int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){	//p is a power of 2
+// fast multiplication only for matrics 2^p x 2^p
+int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){
 	unsigned int n, new_n;
 	n = 1 << p;
-	
 	int** new_matrix = matrix_create(n);
 	
-	if(p > 0){
+	if(p > EFFIENCY_THRESHOLD){
 		new_n = n >> 1;
 		
+		// matrics of less sizes
 		int** a00 = matrix_create(new_n);
 		int** a01 = matrix_create(new_n);
 		int** a10 = matrix_create(new_n);
@@ -116,6 +120,7 @@ int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){	//p is a powe
 			}
 		}
 		
+		// massives ofsubsidiary matrics
 		int** s[10];
 		int** mults[4];
 		s[0] = matrix_sum(a00, a11, new_n);
@@ -144,6 +149,8 @@ int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){	//p is a powe
 		int** fs[2];
 		fs[0] = matrix_nummul(f5, -1, new_n);
 		fs[1] = matrix_nummul(f2, -1, new_n);
+		
+		// finally, components of a result
 		c00 = matrix_sum(f1, f4, new_n);
 		c00 = matrix_sum(c00, f7, new_n);
 		c00 = matrix_sum(c00, fs[0], new_n);
@@ -153,6 +160,7 @@ int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){	//p is a powe
 		c11 = matrix_sum(c11, f3, new_n);
 		c11 = matrix_sum(c11, f6, new_n);
 		
+		// gluing four matrics in one
 		for(int i = 0; i < n; ++i){
 			for(int j = 0; j < n; ++j){
 				if(i < new_n && j < new_n){
@@ -173,6 +181,7 @@ int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){	//p is a powe
 			}
 		}
 		
+		// deleting all besides the result
 		matrix_delete(a00, new_n);
 		matrix_delete(a01, new_n);
 		matrix_delete(a10, new_n);
@@ -212,6 +221,59 @@ int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){	//p is a powe
 	return new_matrix;
 }
 
+// ULTIMATIVE ALGORITHM FOR ANY MATRICS
+int** matrix_ultimative_byDanya_multiplication(int** matrix_1, int** matrix_2, unsigned int n){
+	unsigned int count = 1;
+	int power = 0;
+	for(unsigned int g = n; g > 0; g = g >> 1){
+		count = count << 1;
+		++power;
+	}
+	// that was to know if n is a power of 2
+		
+	if(count & n != n){
+		// if not, subsidiary matrics supplemented with zeroes are created
+		unsigned int new_n = count << 1;
+		int** new_matrix_1 = matrix_create(new_n);
+		int** new_matrix_2 = matrix_create(new_n);
+		
+		for(unsigned int i = 0; i < new_n; ++i){
+			for(unsigned int j = 0; j < new_n; ++j){
+				if(i < n && j < n){
+					new_matrix_1[i][j] = matrix_1[i][j];
+					new_matrix_2[i][j] = matrix_2[i][j];
+				}
+				
+				else{
+					new_matrix_1[i][j] = 0;
+					new_matrix_2[i][j] = 0;
+				}
+			}
+		}
+		
+		int** new_matrix = matrix_ultimative_byDanya_multiplication(new_matrix_1, new_matrix_2, new_n);
+		int** renew_matrix = matrix_create(n);
+		
+		// renew matrix is without extra zeroes already
+		for(int i = 0; i < n; ++i){
+			for(int j = 0; j < n; ++j)
+				renew_matrix[i][j] = new_matrix[i][j];
+		}
+		
+		// deleting other matrics
+		matrix_delete(new_matrix_1, new_n);
+		matrix_delete(new_matrix_2, new_n);
+		matrix_delete(new_matrix, new_n);
+		
+		return renew_matrix;
+	}
+	
+	else{
+		int** new_matrix = matrix_shtrassen_mul(matrix_1, matrix_2, power);
+		return new_matrix;
+	}
+}
+
 
 int main(){
 	int* column_1 = new int[2];
@@ -224,21 +286,15 @@ int main(){
 	m_1[0] = column_1;
 	m_1[1] = column_2;
 	
-	m_1 = matrix_shtrassen_mul(m_1, m_1, 1);
+	// different tests
 	cout << m_1[0][0] << ' ' << m_1[1][0] << endl << m_1[0][1] << ' ' << m_1[1][1] << endl;
-	
-	//m_1 = matrix_nummul(m_1, 2, 2);
-	//cout << m_1[0][0] << ' ' << m_1[1][0] << endl << m_1[0][1] << ' ' << m_1[1][1] << endl;
-	//m_1 = matrix_sum(m_1, m_1, 2);
-	//cout << m_1[0][0] << ' ' << m_1[1][0] << endl << m_1[0][1] << ' ' << m_1[1][1] << endl;
+	m_1 = matrix_ultimative_byDanya_multiplication(m_1, m_1, 1);
+	cout << m_1[0][0] << ' ' << m_1[1][0] << endl << m_1[0][1] << ' ' << m_1[1][1] << endl;
+	m_1 = matrix_nummul(m_1, 2, 2);
+	cout << m_1[0][0] << ' ' << m_1[1][0] << endl << m_1[0][1] << ' ' << m_1[1][1] << endl;
+	m_1 = matrix_sum(m_1, m_1, 2);
+	cout << m_1[0][0] << ' ' << m_1[1][0] << endl << m_1[0][1] << ' ' << m_1[1][1] << endl;
 	
 	return 0;
 }
 
-
-
-/*unsigned int count = 1;
-	for(unsigned int g = n; g > 0; g = g >> 1)
-		count << 1;
-		
-	if(count & n != n)*/
