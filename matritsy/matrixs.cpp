@@ -6,7 +6,7 @@ using namespace std;
 // каждая матрица -- указатель на массив указателей,
 // каждый указатель из массива указывает на столбец
 
-// a size of a matrix starting from which naive multiplication starts
+// a size of a matrix from which naive multiplication starts
 // presented as a power of 2
 const char EFFIENCY_THRESHOLD = 6;
 
@@ -41,6 +41,7 @@ int** matrix_sum(int** matrix_1, int** matrix_2, unsigned int n){
 	return new_matrix;
 }
 
+
 // multiplication by a number
 int** matrix_nummul(int** some_matrix, int number, unsigned int n){
 	int** new_matrix = matrix_create(n);
@@ -53,11 +54,12 @@ int** matrix_nummul(int** some_matrix, int number, unsigned int n){
 	return new_matrix;
 }
 
+
 // naive multiplication for any matrics
 int** matrix_naivemul(int** matrix_1, int** matrix_2, unsigned int n){
 	int** new_matrix = matrix_create(n);
 	
-	for(int i = 0; i < n; ++i){
+	for(unsigned int i = 0; i < n; ++i){
 		for(unsigned int j = 0; j < n; ++j){
 			int value_ij = 0;
 			
@@ -70,6 +72,7 @@ int** matrix_naivemul(int** matrix_1, int** matrix_2, unsigned int n){
 	
 	return new_matrix;
 }
+
 
 // fast multiplication only for matrics 2^p x 2^p
 int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){
@@ -221,19 +224,20 @@ int** matrix_shtrassen_mul(int** matrix_1, int** matrix_2, int p){
 	return new_matrix;
 }
 
-// ULTIMATIVE ALGORITHM FOR ANY MATRICS
+
+// ULTIMATIVE ALGORITHM FOR ANY MATRICES
 int** matrix_ultimative_byDanya_multiplication(int** matrix_1, int** matrix_2, unsigned int n){
 	unsigned int count = 1;
 	int power = 0;
-	for(unsigned int g = n; g > 0; g = g >> 1){
+	for(unsigned int g = n >> 1; g > 0; g = g >> 1){
 		count = count << 1;
 		++power;
-	}
-	// that was to know if n is a power of 2
-		
-	if(count & n != n){
+	}	// that was to know if n is a power of 2
+	
+	if((count & n) != n){
 		// if not, subsidiary matrics supplemented with zeroes are created
 		unsigned int new_n = count << 1;
+		int new_power = power + 1;
 		int** new_matrix_1 = matrix_create(new_n);
 		int** new_matrix_2 = matrix_create(new_n);
 		
@@ -251,16 +255,16 @@ int** matrix_ultimative_byDanya_multiplication(int** matrix_1, int** matrix_2, u
 			}
 		}
 		
-		int** new_matrix = matrix_ultimative_byDanya_multiplication(new_matrix_1, new_matrix_2, new_n);
+		int** new_matrix = matrix_shtrassen_mul(new_matrix_1, new_matrix_2, new_power);
 		int** renew_matrix = matrix_create(n);
 		
-		// renew matrix is without extra zeroes already
+		// the renew matrix is without extra zeroes already
 		for(int i = 0; i < n; ++i){
 			for(int j = 0; j < n; ++j)
 				renew_matrix[i][j] = new_matrix[i][j];
 		}
 		
-		// deleting other matrics
+		// deleting other matrices
 		matrix_delete(new_matrix_1, new_n);
 		matrix_delete(new_matrix_2, new_n);
 		matrix_delete(new_matrix, new_n);
@@ -275,7 +279,7 @@ int** matrix_ultimative_byDanya_multiplication(int** matrix_1, int** matrix_2, u
 }
 
 
-int main(){
+int main(){/*
 	int* column_1 = new int[2];
 	int* column_2 = new int[2];
 	
@@ -294,6 +298,46 @@ int main(){
 	cout << m_1[0][0] << ' ' << m_1[1][0] << endl << m_1[0][1] << ' ' << m_1[1][1] << endl;
 	m_1 = matrix_sum(m_1, m_1, 2);
 	cout << m_1[0][0] << ' ' << m_1[1][0] << endl << m_1[0][1] << ' ' << m_1[1][1] << endl;
+	*/
+	
+	const uint64_t size = 5;
+	
+	
+	int** m1 = matrix_create(size);
+	int** m2 = matrix_create(size);
+	
+	for(int i = 0; i < size; ++i){
+		for(int j = 0; j < size; ++j){
+			m1[i][j] = i*j % 3;
+			m2[i][j] = (i + j) % 3;
+		}
+	}
+	
+	for(int i = 0; i < size; ++i){
+		for(int j = 0; j < size; ++j)
+			cout << m1[j][i] << ' ';
+		
+		cout << endl;
+	}
+	
+	cout << endl;
+	
+	for(int i = 0; i < size; ++i){
+		for(int j = 0; j < size; ++j)
+			cout << m2[j][i] << ' ';
+		
+		cout << endl;
+	}
+	
+	cout << endl;
+	
+	int** new_m = matrix_ultimative_byDanya_multiplication(m1, m2, size);
+	for(int i = 0; i < size; ++i){
+		for(int j = 0; j < size; ++j)
+			cout << new_m[j][i] << ' ';
+		
+		cout << endl;
+	}
 	
 	return 0;
 }
