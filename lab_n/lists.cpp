@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 using namespace std;
 
@@ -15,31 +16,32 @@ struct list{
 };
 
 
-// создаёт списочек (защита от дурака похерена)
-list* create_list(int* values, unsigned int len){
+// создаёт списочек
+list* list_create(unsigned int len, int* values=NULL){
 	list* new_list = new list;
-	element* current_elem = new element;
-	new_list -> first_element = current_elem;
-	new_list -> length_of_list = len;
-	
-	for(int i = 0; i < len; ++i){
-		current_elem -> value = values[i];
+	if(len){
+		element* current_elem = new element;
+		new_list -> first_element = current_elem;
+		new_list -> length_of_list = len;
 		
-		if(i < len-1){
-			element* next_elem = new element;
-			next_elem -> previous_element = current_elem;
-			current_elem -> next_element = next_elem;
-			current_elem = next_elem;
+		for(int i = 0; i < len; ++i){
+			current_elem -> value = values[i];
+			if(i < len-1){
+				element* next_elem = new element;
+				next_elem -> previous_element = current_elem;
+				current_elem -> next_element = next_elem;
+				current_elem = next_elem;
+			}
 		}
-		else
-			new_list -> last_element = current_elem;
+		
+		new_list -> last_element = current_elem;
 	}
 	
 	return new_list;
 }
 
 
-void apply_end(list* _list, int new_val){
+void list_append(list* _list, int new_val){
 	element* new_elem = new element;
 	new_elem -> value = new_val;
 	element*& c_l_elem = _list -> last_element;
@@ -50,7 +52,7 @@ void apply_end(list* _list, int new_val){
 }
 
 
-void apply_inception(list* _list, int new_val){
+void list_appinception(list* _list, int new_val){
 	element* new_elem = new element;
 	new_elem -> value = new_val;
 	element*& c_l_elem = _list -> first_element;
@@ -72,6 +74,7 @@ element* list_elem(list* _list, unsigned int pos){
 			for(int i = 0; i < pos; ++i)
 				current_elem = current_elem -> next_element;
 		}
+		
 		else{
 			current_elem = _list -> last_element;
 			for(int i = len-1; i > pos; --i)
@@ -98,15 +101,17 @@ int list_val(list* _list, unsigned int pos){
 
 
 // добавляет значение в  произвольное место (возможно, в самый конец)
-void apply_val(list* _list, unsigned int pos, int new_val){
+void list_apply(list* _list, unsigned int pos, int new_val){
 	unsigned int len = _list -> length_of_list;
 	
 	if(!pos){
-		apply_inception(_list, new_val);
+		list_appinception(_list, new_val);
 	}
+	
 	else if(pos == len){
-		apply_end(_list, new_val);
+		list_append(_list, new_val);
 	}
+	
 	else if(pos < len){
 		element* new_elem = new element;
 		element* pre_elem = list_elem(_list, pos-1);
@@ -122,16 +127,15 @@ void apply_val(list* _list, unsigned int pos, int new_val){
 	}
 }
 
-
 // нерабочая remove, которая пока работает только для списков длины 1 и 2
-void remove(list* _list, int val){
+void list_remove(list* _list, int val){
 	unsigned int len = _list -> length_of_list;
 	element* current_elem = _list -> first_element;
 	
 	if(len == 1){
 		int current_val = list_val(_list, 0);
 		if(current_val == val){
-			delete[] current_elem;
+			delete current_elem;
 			_list -> first_element = _list -> last_element = 0;
 		}
 	}
@@ -139,19 +143,20 @@ void remove(list* _list, int val){
 	else if(len == 2){
 		int current_val = list_val(_list, 0);
 		if(current_val == val){
-			delete[] current_elem;
+			delete current_elem;
 			_list -> first_element = _list -> last_element;
-			remove(_list, val);
+			list_remove(_list, val);
 		}
 		else{
 			element* next_elem = current_elem -> next_element;
 			int next_val = next_elem -> value;
 			if(next_val == val){
-				delete[] next_elem;
+				delete next_elem;
 				_list -> last_element = _list -> first_element;
 			}
 		}
 	}
+	
 	else{
 		for(int i = 0; i < len; ++i){
 			int current_val = list_val(_list, i);
@@ -164,28 +169,45 @@ void remove(list* _list, int val){
 	}
 }
 
-
-// неэффективное по памяти слияние списков (можно было массив не создавать, но пока так), а главное -- ненужное,
-// потому что в сортировке я это использовать не собирался, но пусть будет.
-list* merge_lists(list* list_1, list* list_2){
-	unsigned int len_1 = list_1 -> length_of_list;
-	unsigned int len_2 = list_2 -> length_of_list;
-	unsigned int len = len_1 + len_2;
-	int* values = new int[len];
-	
-	for(int i = 0; i < len_1; ++i)
-		values[i] = list_val(list_1, i);
-	for(int i = 0; i < len_2; ++i)
-		values[i] = list_val(list_2, i);
-	
-	list* nova_list = create_list(values, len);
-	delete[] values;
-	
-	return nova_list;
+// Здесь наблюдаем слияние
+list* list_merge(list* list_1, list* list_2){
+	if(list_1 != NULL, list_2 != NULL){
+		unsigned int len_1 = list_1 -> length_of_list;
+		unsigned int len_2 = list_2 -> length_of_list;
+		unsigned int len = len_1 + len_2;
+		list* new_list = new list;
+		new_list -> length_of_list = len;
+		new_list -> first_element = list_1 -> first_element;
+		new_list -> last_element = list_2 -> last_element;
+		
+		element* el1 = list_1 -> last_element;
+		element* el2 = list_2 -> first_element;
+		el1 -> next_element = el2;
+		el2 -> previous_element = el1;
+		
+		return new_list;
+	}
 }
 
 
-void printlist(list* _list){
+/*list* list_copy(list* _list){
+	list* nov = new list;
+	unsigned int len = _list -> length_of_list;
+	element* current_element = _list -> first_element;
+	nov -> first_element = current_element;
+	
+	for(int i = 0; i < len; ++i){
+		
+	}
+}*/
+
+
+void list_merge_sort(list* _list){
+	
+}
+
+
+void list_print(list* _list){
 	unsigned int len = _list -> length_of_list;
 	element* current_elem = _list -> first_element;
 	
@@ -204,6 +226,27 @@ void printlist(list* _list){
 
 
 int main(){
+	int arr[] = {1};
+	/*list* nl = list_create(5, arr);
+	list_print(nl);
+	cout << endl << endl;
+	list_apply(nl, 5, 6);
+	list_print(nl);*/
+	
+	list* nov = list_create(1, arr);
+	auto start_time = std::chrono::steady_clock::now();
+	
+	for(int i = 0; i < 10000; ++i){
+		auto time_1 = std::chrono::steady_clock::now();
+		list_append(nov, i);
+		auto time_2 = std::chrono::steady_clock::now();
+		auto dur = time_2 - time_1;
+		cout << i+1 << ": " << std::chrono::duration_cast<std::chrono::microseconds>(dur).count() << endl;
+	}
+	
+	auto stop_time = std::chrono::steady_clock::now();
+	cout << std::chrono::duration_cast<std::chrono::microseconds>(stop_time - start_time).count();
 	
 	return 0;
 }
+
