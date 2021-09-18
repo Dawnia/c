@@ -241,7 +241,6 @@ class Hhash{
 		}
 		
 		void rehash(uint64_t new_len){
-			cout << 1 << endl;
 			string* new_main = new string[new_len];
 			bool* new_depth = new bool[new_len];
 			uint64_t new_free_nums = new_len;
@@ -258,7 +257,7 @@ class Hhash{
 			free_nums = new_free_nums;
 			
 			for(uint64_t i = 0; i < last_len; ++i){
-				if(depth[i]){
+				if(last_depth[i]){
 					string s = last_main[i];
 					_add(s);
 				}
@@ -287,7 +286,7 @@ class Hhash{
 			
 			uint64_t find(string s){
 				uint64_t pos = h_1(s);
-				uint64_t delta = h_2(s);
+				uint64_t delta = pos%_prime_delta_number ? _prime_delta_number : _prime_delta_number + 1;
 				for(; main[pos] != s; pos = (pos + delta) % len);
 				if(depth[pos])
 					return pos;
@@ -371,19 +370,19 @@ int main3(){
 	hash.add("FIRST");
 	hash.add("FIRST");
 	hash.add("SECOND");
-	//uint64_t ns = hash.find("SECOND");
+	uint64_t ns = hash.find("SECOND");
 	hash.add("THIRD");
 	hash.add("FOURTH");
-	hash.test1();
-	hash.test2();
-	hash.test3();
-	//cout << ns << endl;
+	//hash.test1();
+	//hash.test2();
+	//hash.test3();
+	cout << ns << endl;
 	//ns = hash.find("FIRST");
 	//cout << ns << endl;
 	//ns = hash.find("THIRD");
 	//cout << ns << endl;
-	//hash.del("SECOND");
-	//ns = hash.find("SECOND");
+	hash.del("SECOND");
+	ns = hash.find("SECOND");
 	
 	return 0;
 }
