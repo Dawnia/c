@@ -7,7 +7,7 @@ using namespace std;
 
 class State {
 public:
-	bool contains(int s) const;
+	virtual bool contains(int s) const=0;
 };
 
 
@@ -18,7 +18,7 @@ private:
 
 public:
 	UnionState() : state_1(nullptr), state_2(nullptr) {}
-	UnionState(State* state_1, State* state_2) : state_1(state_1), state_2(state_2) {}
+	UnionState(State const& state_1, State const& state_2) : state_1(&state_1), state_2(&state_2) {}
 
 	bool contains(int s) const{
 		if (state_1 && state_2)
@@ -36,7 +36,7 @@ private:
 
 public:
 	SubstrState() : state_1(nullptr), state_2(nullptr) {}
-	SubstrState(State* state_1, State* state_2) : state_1(state_1), state_2(state_2) {}
+	SubstrState(State const& state_1, State const& state_2) : state_1(&state_1), state_2(&state_2) {}
 
 	bool contains(int s) const{
 		if (state_1 && state_2)
@@ -113,9 +113,15 @@ int main() {
 	SegmentState s(0, 10);
 	SetState ss({ 1, 3, 5, 7, 23, 48, 57, 60, 90, 99 });
 	ProbabilityTest pt(10, 0, 100, 100000);
-	//cout << pt(d) << endl;
-	//std::cout << pt(s) << std::endl;
-	//std::cout << pt(ss) << std::endl;
+	cout << pt(d) << endl;
+	std::cout << pt(s) << std::endl;
+	std::cout << pt(ss) << std::endl;
+
+	UnionState sss(d, s);
+	cout << pt(sss) << endl;
+
+	SubstrState qq(sss, s);
+	cout << pt(qq) << endl;
 	return 0;
 }
 
