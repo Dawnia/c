@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 
@@ -16,6 +17,20 @@ class Grid {
 			size = x_size * y_size;
 		}
 		
+		Grid(const Grid& other): Grid(other.x_size, other.y_size){
+			for(int i = 0; i < size; ++i)
+				memory[i] = other.memory[i];
+		}
+		
+		Grid(Grid&& other): x_size(other.x_size), y_size(other.y_size), size(other.size){
+			swap(memory, other.memory);
+			
+			other.memory = nullptr;
+			other.size = 0;
+			other.x_size = 0;
+			other.y_size = 0;
+		}
+		
 		uint64_t get_xsize() const{
 			return x_size;
 		}
@@ -24,25 +39,17 @@ class Grid {
 			return y_size;
 		}
 		
-		T operator()(uint64_t x, uint64_t y) const{
-			if(x < x_size && y < y_size)
-				return memory[x * x_size + y];
-			else{
-				cout << "invalid reference, value (0, 0) returned" << endl;
-				return memory[0];
-			}
+		T operator () (uint64_t x, uint64_t y) const{
+			assert(x < x_size && y < y_size);
+			return memory[x * x_size + y];
 		}
 		
-		T& operator()(uint64_t x, uint64_t y){
-			if(x < x_size && y < y_size)
-				return memory[x * x_size + y];
-			else{
-				cout << "invalid reference, value (0, 0) returned" << endl;
-				return memory[0];
-			}
+		T& operator () (uint64_t x, uint64_t y){
+			assert(x < x_size && y < y_size);
+			return memory[x * x_size + y];
 		}
 		
-		Grid& operator=(T val){
+		Grid& operator = (T val){
 			for(uint64_t i = 0; i < size; ++i)
 				memory[i] = val;
 			
@@ -70,7 +77,7 @@ class Grid {
 int main(){
 	Grid<int> g(2, 2);
 	g = 2;
-	int a = g(0, 0);
+	/*int a = g(0, 0);
 	cout << a << ' ';
 	int b = g(0, 1);
 	cout << b << endl;
@@ -78,9 +85,12 @@ int main(){
 	cin >> g;
 	cout << g;
 	int c = g(5, 8);
-	cout << c;
+	cout << c;*/
 	
-//	g.~Grid();
+	Grid<int> g1 = g;
+	Grid<int> g2 = move(g);
+	
+	cout << g1 << endl << g2;
 	
 	return 0;
 }
