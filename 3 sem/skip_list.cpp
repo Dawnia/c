@@ -53,6 +53,9 @@ public:
 	SL_iterator<T>& operator--() {
 		if(!ifend)
         	cur = cur -> pre;
+        else
+        	return thelist.floor[0] -> second;
+        
         return *this;
     }
     
@@ -72,11 +75,11 @@ public:
     }
     
     bool operator == (const SL_iterator<T>& oth) const {
-        return ifend == oth.ifend;
+        return cur == oth.cur && thelist == oth.thelist;
     }
     
     bool operator != (const SL_iterator<T>& oth) const {
-        return cur != oth.cur;
+        return cur != oth.cur || thelist != oth.thelist;
     }
 };
 
