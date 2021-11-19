@@ -165,22 +165,4 @@ public:
 	
 };
 
-/*
-    SlipList& operator * () const {return *ptr;}
-    pointer operator->() {return ptr}
-
-    Itertor& operator++() {ptr++; return *this;}
-    Itertor operator++(int) {return ++(*this);}
-
-*/
-
-/*class MySomeClass {
-private:
-    int* data;
-    int len = 100;
-
-public:
-    Itertor begin() {return Itertor(&data);}
-    Itertor end() {return Itertor(&data + len);}
-};*/
 
