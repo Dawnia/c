@@ -22,12 +22,15 @@ struct SL_knot{
 };
 
 template <class T>
-class SL_itertor: public std::iterator<std::bidirectional_iterator_tag, SL_knot<T>> {
+class SL_iterator: public std::iterator<std::bidirectional_iterator_tag, SL_knot<T>> {
 private:
 	SL_knot<T>* cur;
 
 public:
-	explicit SL_itertor(SL_knot<T>* cur): cur(cur){};
+	explicit SL_iterator(SL_knot<T>* cur): cur(cur){}
+	SL_iterator(SL_iterator<T>& oth): SL_iterator(oth.cur){}
+	SL_iterator(const SL_iterator<T>& oth) = default;
+	SL_iterator& operator = (const SL_iterator<T>& oth) = default;
 	
 	SL_iterator<T>& operator ++ (){
 		cur = cur -> next;
@@ -35,7 +38,7 @@ public:
 	}
 	
 	SL_iterator<T>& operator--() {
-        current = current -> pre;
+        cur = cur -> pre;
         return *this;
     }
     
@@ -66,12 +69,12 @@ class SkipList {
 private:
 	uint64_t len;
 	uint64_t high;
-	SL_knot* floors;
+	SL_knot<T>* floors;
 	
-	void resize(new_len);
+	void resize(uint64_t new_len);
 	
 public:
-	SkipList()
+	//SkipList()
 };
 
 /*
