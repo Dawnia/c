@@ -23,6 +23,7 @@ struct SL_knot{
 	SL_knot<T>(SL_knot&& other) = delete;
 };
 
+
 template <class T>
 class SkipList;
 
@@ -59,7 +60,7 @@ public:
         return *this;
     }
     
-    typename SL_iterator::reference* operator ~ () {
+    typename SL_iterator<T>::reference* operator ~ () {
     	assert(!ifend);
         return cur;
     }
@@ -81,6 +82,13 @@ public:
     bool operator != (const SL_iterator<T>& oth) const {
         return cur != oth.cur || thelist != oth.thelist;
     }
+    
+protected:
+	SL_iterator<T>& get_lower(){
+		assert(!ifend);
+		cur = cur -> low;
+		return *this;
+	}
 };
 
 
@@ -101,6 +109,7 @@ private:
 	}
 };
 
+
 template <class T>
 class SkipList {
 private:
@@ -119,6 +128,7 @@ public:
 		max_len = 8;
 		p = 0.5;
 	}
+	friend class SL_iterator<T>;
 	
 	SkipList(SkipList<T>& oth): len(oth.len), high(oth.high), max_len(oth.max_len), floors(oth.floors), p(oth.p){}
 	SkipList(const SkipList<T>& oth) = default;
@@ -132,12 +142,27 @@ public:
 	
 	SL_iterator<T> begin(){
 		if(len)
-			return floors[0] -> first;
+			return floors[0].first;
 		else
 			return SL_iterator<T>(nullptr, this);
 	}
 	
-	SL_iterator<T> find(T key);
+	SL_iterator<T>& find(T key){
+		Floor<T>& last_floor = floors.back();
+		SL_iterator<T> i = last_floor.first;
+		for(i; i != this -> end(); ++i){
+			if(*i > key){
+				--i;
+				if(i != floors.end())
+					i.get_lower;
+			}
+			else if(*i == key)
+				break;
+		}
+		return i;
+	}
+	
+	
 };
 
 /*
