@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iterator>
+#include <list>
 
 using namespace std;
 
@@ -42,9 +43,13 @@ public:
         return *this;
     }
     
-    SL_knot<T>* operator ~ () {
+    typename SL_iterator::reference* operator ~ () {
         return cur;
     }
+    
+    typename SL_iterator::reference operator * (){
+    	return *cur;
+	}
     
     T& operator * () {
         return cur -> val;
@@ -68,13 +73,26 @@ template <class T>
 class SkipList {
 private:
 	uint64_t len;
+	uint64_t max_len;
 	uint64_t high;
-	SL_knot<T>* floors;
+	list<pair<SL_knot<T>*, bool>> floors;
 	
 	void resize(uint64_t new_len);
 	
 public:
-	//SkipList()
+	SkipList(){
+		len = 0;
+		high = 1;
+		max_len = 8;
+	}
+	
+	SkipList(SkipList<T>& oth): len(oth.len), high(oth.high), max_len(oth.max_len), floors(oth.floors){}
+	SkipList(const SkipList<T>& oth) = default;
+	SkipList& operator = (const SkipList<T>& oth) = default;
+	SkipList(SkipList<T>&& oth) = default;
+	SkipList& operator = (SkipList<T>&& oth) = default;
+	
+	
 };
 
 /*
