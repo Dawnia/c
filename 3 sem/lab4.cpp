@@ -13,7 +13,7 @@ T maximum(T one, T two){
 
 
 template <class D>
-D fucktorial(D chislo){
+D fcktorial(D chislo){
 	if(chislo < 1)
 		return 1;
 	
@@ -92,7 +92,7 @@ int main(){
 	b = "bca";
 	c = maximum(a, b);
 	cout << c << endl;
-	cout << fucktorial(5.32) << endl;
+	cout << fcktorial(5.32) << endl;
 	
 	Vector<int> vector;
 	vector.append(3);
